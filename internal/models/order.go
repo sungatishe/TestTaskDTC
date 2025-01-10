@@ -4,11 +4,11 @@ import "time"
 
 // Order represents a customer's order.
 type Order struct {
-	ID           string    `json:"id"`
+	ID           int       `json:"id"`
 	CustomerName string    `json:"customer_name"`
 	Status       string    `json:"status"`
-	TotalPrice   string    `json:"total_price"`
-	Products     []Product `json:"products"`
+	TotalPrice   float64   `json:"total_price"`
+	ProductID    int       `json:"product_id"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 	IsDeleted    bool      `json:"is_deleted"`

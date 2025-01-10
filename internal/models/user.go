@@ -2,7 +2,7 @@ package models
 
 // User represents a user of the system
 type User struct {
-	ID        string `json:"id"`
+	ID        int    `json:"id"`
 	Username  string `json:"username"`
 	Password  string `json:"password"`
 	Role      string `json:"role"`
