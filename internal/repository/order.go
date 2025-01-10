@@ -17,10 +17,10 @@ func NewOrderRepository(db *sql.DB) *OrderRepository {
 func (r *OrderRepository) CreateOrder(order *models.Order) error {
 	query := `
 		INSERT INTO orders (customer_name, status, total_price, product_id)
-		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id
+		VALUES ($1, $2, $3, $4)
 	`
 
-	err := r.db.QueryRow(query, order.CustomerName, order.Status, order.TotalPrice, order.ProductID)
+	_, err := r.db.Exec(query, order.CustomerName, order.Status, order.TotalPrice, order.ProductID)
 	if err != nil {
 		return fmt.Errorf("could not create order: %v", err)
 	}
