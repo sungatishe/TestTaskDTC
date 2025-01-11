@@ -6,19 +6,36 @@ import (
 	"errors"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
+	"regexp"
 )
 
 type AuthService struct {
-	userService UserServiceInterface
+	userService UserRepositoryInterface
 }
 
-func NewAuthService(userService UserServiceInterface) *AuthService {
+func NewAuthService(userService UserRepositoryInterface) *AuthService {
 	return &AuthService{userService: userService}
 }
 
 func (s *AuthService) RegisterUser(user *models.User) error {
-	if user.Username == "" || user.Password == "" {
-		return fmt.Errorf("invalid user data")
+	if user.Username == "" {
+		return fmt.Errorf("invalid user username")
+	}
+
+	re := regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+	isValidUsername := re.MatchString(user.Username)
+
+	if !isValidUsername {
+		return fmt.Errorf("invalid user username: username can only contain letters, digits, and underscores")
+	}
+
+	existingUser, _ := s.userService.GetUserByUsername(user.Username)
+	if existingUser != nil {
+		return fmt.Errorf("user with the same username already exists")
+	}
+
+	if len(user.Password) < 6 {
+		return errors.New("password must be at least 6 characters long")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
@@ -31,6 +48,10 @@ func (s *AuthService) RegisterUser(user *models.User) error {
 }
 
 func (s *AuthService) LoginUser(username, password string) (string, error) {
+	if username == "" || password == "" {
+		return "", errors.New("username and password cannot be empty")
+	}
+
 	user, err := s.userService.GetUserByUsername(username)
 	if err != nil {
 		return "", errors.New("invalid credentials")

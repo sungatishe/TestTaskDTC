@@ -19,13 +19,7 @@ type OrderRepositoryInterface interface {
 type ProductRepositoryInterface interface {
 	CreateProduct(product *models.Product) error
 	UpdateProduct(product *models.Product) error
-	DeleteProduct(productID int) error
+	DeleteProductByID(productID int) error
 	GetProductByID(productID int) (*models.Product, error)
-	GetProductsByFilters(name string, minPrice, maxPrice float64) ([]models.Product, error)
-}
-
-type UserServiceInterface interface {
-	CreateUser(user *models.User) error
-	GetUserByUsername(username string) (*models.User, error)
-	GetUserByID(id int) (*models.User, error)
+	GetAllProducts() ([]models.Product, error)
 }

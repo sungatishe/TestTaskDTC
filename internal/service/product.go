@@ -30,13 +30,13 @@ func (s *ProductService) UpdateProduct(product *models.Product) error {
 }
 
 func (s *ProductService) DeleteProduct(productID int) error {
-	return s.repo.DeleteProduct(productID)
+	return s.repo.DeleteProductByID(productID)
 }
 
 func (s *ProductService) GetProductByID(productID int) (*models.Product, error) {
 	return s.repo.GetProductByID(productID)
 }
 
-func (s *ProductService) GetProductsByFilters(name string, minPrice, maxPrice float64) ([]models.Product, error) {
-	return s.repo.GetProductsByFilters(name, minPrice, maxPrice)
+func (s *ProductService) GetAllProducts() ([]models.Product, error) {
+	return s.repo.GetAllProducts()
 }
