@@ -1,5 +1,7 @@
 package main
 
-func main() {
+import "TestTask/db/config"
 
+func main() {
+	config.InitDB()
 }
