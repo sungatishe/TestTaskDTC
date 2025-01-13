@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"TestTask/internal/middleware"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -13,19 +14,35 @@ func NewRoutes(r chi.Router) *Routes {
 }
 
 func (rt *Routes) SetupOrderRoutes(orderHandler OrderHandlerInterface) {
-	rt.r.Get("/orders", orderHandler.GetOrdersByFilters)
-	rt.r.Get("/orders/{id}", orderHandler.GetOrderByID)
-	rt.r.Post("/orders", orderHandler.CreateOrder)
-	rt.r.Put("/orders/{id}", orderHandler.UpdateOrder)
-	rt.r.Delete("/orders/{id}", orderHandler.DeleteOrder)
+	rt.r.Route("/orders", func(r chi.Router) {
+		// Применение миддлвары для авторизации
+		r.Use(middleware.AuthMiddleware)
+
+		// Эндпоинты для роли User
+		r.With(middleware.RoleMiddleware("User", "Admin")).Post("/", orderHandler.CreateOrder)
+		r.With(middleware.RoleMiddleware("User", "Admin")).Get("/", orderHandler.GetOrdersByFilters)
+		r.With(middleware.RoleMiddleware("User", "Admin")).Get("/{id}", orderHandler.GetOrderByID)
+		r.With(middleware.RoleMiddleware("User", "Admin")).Put("/{id}", orderHandler.UpdateOrder)
+
+		// Эндпоинты для роли Admin
+		r.With(middleware.RoleMiddleware("Admin")).Delete("/{id}", orderHandler.DeleteOrder)
+	})
 }
 
 func (rt *Routes) SetupProductRoutes(productHandler ProductHandlerInterface) {
-	rt.r.Get("/products", productHandler.GetAllProducts)
-	rt.r.Get("/products/{id}", productHandler.GetProductByID)
-	rt.r.Post("/products", productHandler.CreateProduct)
-	rt.r.Put("/products/{id}", productHandler.UpdateProduct)
-	rt.r.Delete("/products/{id}", productHandler.DeleteProduct)
+	rt.r.Route("/products", func(r chi.Router) {
+		// Применение миддлвары для авторизации
+		r.Use(middleware.AuthMiddleware)
+
+		// Эндпоинты для роли Admin
+		r.With(middleware.RoleMiddleware("Admin")).Post("/", productHandler.CreateProduct)
+		r.With(middleware.RoleMiddleware("Admin")).Put("/{id}", productHandler.UpdateProduct)
+		r.With(middleware.RoleMiddleware("Admin")).Delete("/{id}", productHandler.DeleteProduct)
+
+		// Эндпоинты, доступные всем
+		r.Get("/", productHandler.GetAllProducts)
+		r.Get("/{id}", productHandler.GetProductByID)
+	})
 }
 
 func (rt *Routes) SetupAuthRoutes(authHandler AuthHandlerInterface) {

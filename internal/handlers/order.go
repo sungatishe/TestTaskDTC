@@ -6,14 +6,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type OrderHandler struct {
-	service OrderServiceInterface
+	service    OrderServiceInterface
+	logService LogServiceInterface
 }
 
-func NewOrderHandler(service OrderServiceInterface) *OrderHandler {
-	return &OrderHandler{service: service}
+func NewOrderHandler(service OrderServiceInterface, logService LogServiceInterface) *OrderHandler {
+	return &OrderHandler{service: service, logService: logService}
 }
 
 func (h *OrderHandler) CreateOrder(rw http.ResponseWriter, r *http.Request) {
@@ -28,6 +30,30 @@ func (h *OrderHandler) CreateOrder(rw http.ResponseWriter, r *http.Request) {
 
 	err = h.service.CreateOrder(&order)
 	if err != nil {
+		if strings.Contains(err.Error(), "invalid order data") {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+		} else {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	cookie, err := r.Cookie("user_id")
+	if err != nil || cookie == nil {
+		http.Error(rw, "User ID cookie not found", http.StatusUnauthorized)
+		return
+	}
+
+	userID, err := strconv.Atoi(cookie.Value)
+	if err != nil {
+		http.Error(rw, "Invalid User ID", http.StatusUnauthorized)
+		return
+	}
+	action := "create_order"
+	details := "Order created successfully"
+
+	err = h.logService.CreateLog(action, details, userID)
+	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -37,7 +63,7 @@ func (h *OrderHandler) CreateOrder(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (h *OrderHandler) UpdateOrder(rw http.ResponseWriter, r *http.Request) {
-	orderIDStr := r.URL.Query().Get("id")
+	orderIDStr := chi.URLParam(r, "id")
 	if orderIDStr == "" {
 		http.Error(rw, "Missing order ID", http.StatusBadRequest)
 		return
@@ -61,6 +87,30 @@ func (h *OrderHandler) UpdateOrder(rw http.ResponseWriter, r *http.Request) {
 
 	err = h.service.UpdateOrder(&order)
 	if err != nil {
+		if strings.Contains(err.Error(), "invalid order data") {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+		} else {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	cookie, err := r.Cookie("user_id")
+	if err != nil || cookie == nil {
+		http.Error(rw, "User ID cookie not found", http.StatusUnauthorized)
+		return
+	}
+
+	userID, err := strconv.Atoi(cookie.Value)
+	if err != nil {
+		http.Error(rw, "Invalid User ID", http.StatusUnauthorized)
+		return
+	}
+	action := "update_order"
+	details := "Order updated successfully"
+
+	err = h.logService.CreateLog(action, details, userID)
+	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -83,6 +133,26 @@ func (h *OrderHandler) DeleteOrder(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.service.DeleteOrder(orderID)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	cookie, err := r.Cookie("user_id")
+	if err != nil || cookie == nil {
+		http.Error(rw, "User ID cookie not found", http.StatusUnauthorized)
+		return
+	}
+
+	userID, err := strconv.Atoi(cookie.Value)
+	if err != nil {
+		http.Error(rw, "Invalid User ID", http.StatusUnauthorized)
+		return
+	}
+	action := "delete_order"
+	details := "Order deleted successfully"
+
+	err = h.logService.CreateLog(action, details, userID)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
