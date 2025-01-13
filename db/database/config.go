@@ -1,25 +1,23 @@
-package config
+package database
 
 import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
-	"os"
 )
 
 var DB *sql.DB
 
-func InitDB() {
-	dsn := os.Getenv("dsn")
+func InitDB(dsn string) {
 	var err error
 	DB, err = sql.Open("postgres", dsn)
 	if err != nil {
-		panic("Failed to connect db ")
+		panic("Failed to connect database ")
 	}
 
 	err = DB.Ping()
 	if err != nil {
-		panic("Failed to ping db ")
+		panic("Failed to ping database ")
 	}
 
 	if err != nil {

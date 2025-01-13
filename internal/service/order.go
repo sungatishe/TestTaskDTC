@@ -7,11 +7,12 @@ import (
 )
 
 type OrderService struct {
-	repo OrderRepositoryInterface
+	repo  OrderRepositoryInterface
+	cache CacheInterface
 }
 
-func NewOrderService(repo OrderRepositoryInterface) *OrderService {
-	return &OrderService{repo: repo}
+func NewOrderService(repo OrderRepositoryInterface, cache CacheInterface) *OrderService {
+	return &OrderService{repo: repo, cache: cache}
 }
 
 func (s *OrderService) CreateOrder(order *models.Order) error {
@@ -19,7 +20,12 @@ func (s *OrderService) CreateOrder(order *models.Order) error {
 		return fmt.Errorf("invalid order data")
 	}
 
-	return s.repo.CreateOrder(order)
+	err := s.repo.CreateOrder(order)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *OrderService) UpdateOrder(order *models.Order) error {
@@ -28,17 +34,55 @@ func (s *OrderService) UpdateOrder(order *models.Order) error {
 	}
 
 	order.UpdatedAt = time.Now()
+
+	err := s.repo.UpdateOrder(order)
+	if err != nil {
+		return err
+	}
+
+	s.cache.SetOrder(order.ID, order)
+
 	return s.repo.UpdateOrder(order)
 }
 
 func (s *OrderService) DeleteOrder(orderID int) error {
-	return s.repo.DeleteOrder(orderID)
+	err := s.repo.DeleteOrder(orderID)
+	if err != nil {
+		return err
+	}
+
+	s.cache.DeleteOrder(orderID)
+	return nil
 }
 
 func (s *OrderService) GetOrderByID(orderID int) (*models.Order, error) {
-	return s.repo.GetOrderByID(orderID)
+	cachedOrder, found := s.cache.GetOrder(orderID)
+	if found {
+		return cachedOrder, nil
+	}
+
+	order, err := s.repo.GetOrderByID(orderID)
+	if err != nil {
+		return nil, err
+	}
+
+	s.cache.SetOrder(orderID, order)
+	return order, nil
 }
 
 func (s *OrderService) GetOrdersByFilters(status string, minPrice, maxPrice float64) ([]models.Order, error) {
-	return s.repo.GetOrdersByFilters(status, minPrice, maxPrice)
+	cacheKey := fmt.Sprintf("%s_%f_%f", status, minPrice, maxPrice)
+
+	cachedOrders, found := s.cache.GetOrders(cacheKey)
+	if found {
+		return cachedOrders, nil
+	}
+
+	orders, err := s.repo.GetOrdersByFilters(status, minPrice, maxPrice)
+	if err != nil {
+		return nil, err
+	}
+
+	s.cache.SetOrders(cacheKey, orders)
+	return orders, nil
 }
