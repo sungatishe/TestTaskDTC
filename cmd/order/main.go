@@ -1,7 +1,9 @@
 package main
 
-import "TestTask/db/config"
+import (
+	"TestTask/internal/app"
+)
 
 func main() {
-	config.InitDB()
+	app.Run()
 }

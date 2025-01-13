@@ -23,3 +23,11 @@ type ProductRepositoryInterface interface {
 	GetProductByID(productID int) (*models.Product, error)
 	GetAllProducts() ([]models.Product, error)
 }
+
+type CacheInterface interface {
+	SetOrder(orderID int, order *models.Order)
+	GetOrder(orderID int) (*models.Order, bool)
+	DeleteOrder(orderID int)
+	SetOrders(key string, orders []models.Order)
+	GetOrders(key string) ([]models.Order, bool)
+}

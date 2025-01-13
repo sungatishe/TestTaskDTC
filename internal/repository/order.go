@@ -100,13 +100,13 @@ func (r *OrderRepository) GetOrdersByFilters(status string, minPrice, maxPrice f
 	`
 
 	if status != "" {
-		query += "AND status = $1"
+		query += " AND status = $1"
 	}
 	if minPrice > 0 {
-		query += "AND total_price >= $2"
+		query += " AND total_price >= $2"
 	}
 	if maxPrice > 0 {
-		query += "AND total_price <= $3"
+		query += " AND total_price <= $3"
 	}
 
 	rows, err := r.db.Query(query, status, minPrice, maxPrice)
