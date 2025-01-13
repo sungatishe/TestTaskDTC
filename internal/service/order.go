@@ -25,9 +25,7 @@ func (s *OrderService) CreateOrder(order *models.Order) error {
 		return err
 	}
 
-	s.cache.SetOrder(order.ID, order)
-
-	return s.repo.CreateOrder(order)
+	return nil
 }
 
 func (s *OrderService) UpdateOrder(order *models.Order) error {

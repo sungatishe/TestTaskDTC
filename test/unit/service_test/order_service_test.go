@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"TestTask/internal/cache"
 	"TestTask/internal/models"
 	"TestTask/internal/service"
 	"github.com/stretchr/testify/assert"
@@ -42,7 +43,8 @@ func (m *MockOrderRepository) GetOrdersByFilters(status string, minPrice, maxPri
 
 func TestCreateOrder(t *testing.T) {
 	mockRepo := new(MockOrderRepository)
-	orderService := service.NewOrderService(mockRepo)
+	mockCache := cache.NewCacheService()                         // Добавляем инстанс CacheService
+	orderService := service.NewOrderService(mockRepo, mockCache) // Передаем cache сюда
 
 	order := &models.Order{
 		CustomerName: "John Doe",
@@ -73,7 +75,8 @@ func TestCreateOrder(t *testing.T) {
 
 func TestUpdateOrder(t *testing.T) {
 	mockRepo := new(MockOrderRepository)
-	orderService := service.NewOrderService(mockRepo)
+	mockCache := cache.NewCacheService()                         // Добавляем инстанс CacheService
+	orderService := service.NewOrderService(mockRepo, mockCache) // Передаем cache сюда
 
 	order := &models.Order{
 		ID:           1,
@@ -106,7 +109,8 @@ func TestUpdateOrder(t *testing.T) {
 
 func TestDeleteOrder(t *testing.T) {
 	mockRepo := new(MockOrderRepository)
-	orderService := service.NewOrderService(mockRepo)
+	mockCache := cache.NewCacheService()                         // Добавляем инстанс CacheService
+	orderService := service.NewOrderService(mockRepo, mockCache) // Передаем cache сюда
 
 	// Мокаем успешное выполнение удаления
 	mockRepo.On("DeleteOrder", 1).Return(nil)
@@ -121,7 +125,8 @@ func TestDeleteOrder(t *testing.T) {
 
 func TestGetOrderByID(t *testing.T) {
 	mockRepo := new(MockOrderRepository)
-	orderService := service.NewOrderService(mockRepo)
+	mockCache := cache.NewCacheService()                         // Добавляем инстанс CacheService
+	orderService := service.NewOrderService(mockRepo, mockCache) // Передаем cache сюда
 
 	order := &models.Order{
 		ID:           1,
@@ -150,7 +155,8 @@ func TestGetOrderByID(t *testing.T) {
 
 func TestGetOrdersByFilters(t *testing.T) {
 	mockRepo := new(MockOrderRepository)
-	orderService := service.NewOrderService(mockRepo)
+	mockCache := cache.NewCacheService()                         // Добавляем инстанс CacheService
+	orderService := service.NewOrderService(mockRepo, mockCache) // Передаем cache сюда
 
 	orders := []models.Order{
 		{ID: 1, CustomerName: "John Doe", TotalPrice: 99.99, ProductID: 1},
