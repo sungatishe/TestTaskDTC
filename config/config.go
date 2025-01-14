@@ -21,11 +21,6 @@ type AppConfig struct {
 		Name     string `mapstructure:"name"`
 		SSLMode  string `mapstructure:"ssl_mode"`
 	} `mapstructure:"database"`
-
-	Logging struct {
-		Level string `mapstructure:"level"`
-		File  string `mapstructure:"file"`
-	} `mapstructure:"logging"`
 }
 
 var Config AppConfig

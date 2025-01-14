@@ -14,6 +14,8 @@ COPY . .
 # Сборка исполняемого файла
 RUN go build -o /order ./cmd/order/main.go
 
+
+
 # Создаем минимальный образ для запуска
 FROM alpine:latest
 WORKDIR /root/
@@ -23,6 +25,8 @@ COPY --from=builder /order .
 
 # Копируем конфигурационный файл
 COPY config/config.yaml ./config.yaml
+
+COPY docs ./docs
 
 # Экспорт порта
 EXPOSE 8080

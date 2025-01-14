@@ -1,6 +1,6 @@
 app:
   name: "order-service"
-  port: ${APP_PORT:-8080}
+  port: ${APP_PORT}
 
 database:
   host: ${DB_HOST}
@@ -9,11 +9,3 @@ database:
   password: ${DB_PASSWORD}
   name: ${DB_NAME}
   ssl_mode: ${DB_SSL_MODE}
-
-#logging:
-#  level: ${LOG_LEVEL:-info}
-#  file: ${LOG_FILE:-logs/app.log}
-#
-#cache:
-#  enabled: ${CACHE_ENABLED:-true}
-#  ttl: ${CACHE_TTL:-60} # Time-to-live in seconds

@@ -1,14 +1,19 @@
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
 createdb:
-	docker exec -it order_db createdb --username=${POSTGRES_USER} --owner=${POSTGRES_USER} ${POSTGRES_DB}
+	docker exec -it order_db createdb --username=${DB_USER} --owner=${DB_USER} ${DB_NAME}
 
 dropdb:
-	docker exec -it order_db dropdb --username=${POSTGRES_USER} ${POSTGRES_DB}
+	docker exec -it order_db dropdb --username=${DB_USER} ${DB_NAME}
 
 migrateup:
 	migrate -path db/migrations -database "postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}?sslmode=disable" up
 
 migratedown:
-	migrate -path db/migrations -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?sslmode=disable" down
+	migrate -path db/migrations -database "postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}?sslmode=disable" down
 
 build:
 	docker-compose up --build
@@ -19,4 +24,10 @@ up:
 down:
 	docker-compose down
 
-.PHONY: createdb dropdb migrateup migratedown build up down
+swag_init:
+	swag init -d ./cmd/order,./
+
+test:
+	go test ./...
+
+.PHONY: createdb dropdb migrateup migratedown build up down swag_init test
