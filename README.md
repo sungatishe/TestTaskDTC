@@ -30,6 +30,55 @@ Application for managing orders and products developed in Go. It provides a REST
 - `pkg/utils`: Utility functions used across the project, such as JWT handling.
 - `test`: Unit tests for services and repositories.
 
+## Prerequisites
+
+Before running the project, make sure you have the following software installed:
+
+1. **Golang (>= 1.18)**
+   - This project is built using Go, so you'll need Go installed to work with the code locally, run tests, or build the application from source.
+   - You can install Go from the official website: [https://golang.org/dl/](https://golang.org/dl/).
+
+2. **Docker & Docker Compose**
+   - Docker is used for containerization of the database (`postgres`) and the order service (`order-service`).
+   - Docker Compose is used to orchestrate the multi-container setup.
+   - You can install Docker and Docker Compose from: [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/).
+
+3. **golang-migrate (for database migrations)**
+   - `golang-migrate` is used for managing database schema migrations.
+   - You can install `golang-migrate` using the following command (if it's not available):
+
+     ```bash
+     brew install golang-migrate
+     ```
+
+     Or follow the official installation guide: [https://github.com/golang-migrate/migrate](https://github.com/golang-migrate/migrate).
+
+4. **Swagger (Optional, if you want to regenerate documentation)**
+   - Swagger is used for API documentation. It is required to run `make swag_init` to regenerate the API docs.
+   - You can install Swagger using:
+
+     ```bash
+     brew install swag
+     ```
+
+     Or follow the installation instructions: [https://github.com/swaggo/swag](https://github.com/swaggo/swag).
+
+---
+
+### Additional Tools (Optional)
+
+- **Make**
+   - While not strictly required, **Make** is used to simplify various commands (e.g., running tests, setting up the database, building the application).
+   - Make is typically pre-installed on most UNIX-like systems. If it's missing, install it via:
+
+      - On Ubuntu: `sudo apt install make`
+      - On macOS: `brew install make`
+
+---
+
+Once you have all these prerequisites installed, follow the instructions in the next section to set up and run the project.
+
+
 
 ## Running the Application
 
@@ -88,23 +137,8 @@ To set up and run the application, you can use Docker Compose and Makefile comma
     make migrateup
     ```
 
-5. **Health Check:**
 
-   The `order-service` will automatically wait for the `db` to be ready due to `depends_on` configuration in `docker-compose.yaml`.
-
-   If you'd like to manually check if your database is reachable from within the `order-service` container, run:
-    ```bash
-    docker exec -it order-service pg_isready -h order_db -U ${DB_USER} -d ${DB_NAME}
-    ```
-
-6. **Testing the Application (Optional):**
-
-   To run the unit tests for repositories and services, use the following command:
-    ```bash
-    make test
-    ```
-
-7. **Stopping the Application:**
+5. **Stopping the Application:**
 
    To stop the running services, you can use the following command:
     ```bash
