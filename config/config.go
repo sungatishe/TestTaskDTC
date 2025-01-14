@@ -21,6 +21,11 @@ type AppConfig struct {
 		Name     string `mapstructure:"name"`
 		SSLMode  string `mapstructure:"ssl_mode"`
 	} `mapstructure:"database"`
+
+	Kafka struct {
+		Brokers string `mapstructure:"address"`
+		Topic   string `mapstructure:"topic_order_status_changed"`
+	} `mapstructure:"kafka"`
 }
 
 var Config AppConfig
