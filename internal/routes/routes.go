@@ -3,6 +3,7 @@ package routes
 import (
 	"TestTask/internal/middleware"
 	"github.com/go-chi/chi/v5"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Routes struct {
@@ -15,7 +16,6 @@ func NewRoutes(r chi.Router) *Routes {
 
 func (rt *Routes) SetupOrderRoutes(orderHandler OrderHandlerInterface) {
 	rt.r.Route("/orders", func(r chi.Router) {
-		// Применение миддлвары для авторизации
 		r.Use(middleware.AuthMiddleware)
 
 		// Эндпоинты для роли User
@@ -31,7 +31,6 @@ func (rt *Routes) SetupOrderRoutes(orderHandler OrderHandlerInterface) {
 
 func (rt *Routes) SetupProductRoutes(productHandler ProductHandlerInterface) {
 	rt.r.Route("/products", func(r chi.Router) {
-		// Применение миддлвары для авторизации
 		r.Use(middleware.AuthMiddleware)
 
 		// Эндпоинты для роли Admin
@@ -39,7 +38,6 @@ func (rt *Routes) SetupProductRoutes(productHandler ProductHandlerInterface) {
 		r.With(middleware.RoleMiddleware("Admin")).Put("/{id}", productHandler.UpdateProduct)
 		r.With(middleware.RoleMiddleware("Admin")).Delete("/{id}", productHandler.DeleteProduct)
 
-		// Эндпоинты, доступные всем
 		r.Get("/", productHandler.GetAllProducts)
 		r.Get("/{id}", productHandler.GetProductByID)
 	})
@@ -48,4 +46,8 @@ func (rt *Routes) SetupProductRoutes(productHandler ProductHandlerInterface) {
 func (rt *Routes) SetupAuthRoutes(authHandler AuthHandlerInterface) {
 	rt.r.Post("/register", authHandler.RegisterUser)
 	rt.r.Post("/login", authHandler.LoginUser)
+}
+
+func (rt *Routes) SetupSwagger() {
+	rt.r.Get("/swagger/*", httpSwagger.WrapHandler)
 }

@@ -54,6 +54,7 @@ func Run() {
 	apiRoutes.SetupOrderRoutes(orderHandler)
 	apiRoutes.SetupProductRoutes(productHandler)
 	apiRoutes.SetupAuthRoutes(authHandler)
+	apiRoutes.SetupSwagger()
 
 	appConfig := config.Config.App
 	log.Println("Server is running on port: ", appConfig.Port)

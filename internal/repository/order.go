@@ -4,6 +4,7 @@ import (
 	"TestTask/internal/models"
 	"database/sql"
 	"fmt"
+	"strings"
 )
 
 type OrderRepository struct {
@@ -94,32 +95,47 @@ func (r *OrderRepository) GetOrderByID(orderID int) (*models.Order, error) {
 
 func (r *OrderRepository) GetOrdersByFilters(status string, minPrice, maxPrice float64) ([]models.Order, error) {
 	query := `
-		SELECT id, customer_name, status, total_price, created_at, updated_at, is_deleted
-        FROM orders
-        WHERE is_deleted = false
+		SELECT id, customer_name, status, total_price, product_id, created_at, updated_at, is_deleted
+		FROM orders
+		WHERE is_deleted = false
 	`
 
+	args := []interface{}{}
+	whereClauses := []string{}
+
 	if status != "" {
-		query += " AND status = $1"
-	}
-	if minPrice > 0 {
-		query += " AND total_price >= $2"
-	}
-	if maxPrice > 0 {
-		query += " AND total_price <= $3"
+		whereClauses = append(whereClauses, fmt.Sprintf("status = $%d", len(args)+1))
+		args = append(args, status)
 	}
 
-	rows, err := r.db.Query(query, status, minPrice, maxPrice)
+	if minPrice > 0 {
+		whereClauses = append(whereClauses, fmt.Sprintf("total_price >= $%d", len(args)+1))
+		args = append(args, minPrice)
+	}
+
+	if maxPrice > 0 {
+		whereClauses = append(whereClauses, fmt.Sprintf("total_price <= $%d", len(args)+1))
+		args = append(args, maxPrice)
+	}
+
+	if len(whereClauses) > 0 {
+		query += " AND " + strings.Join(whereClauses, " AND ")
+	}
+
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get orders: %v", err)
+		return nil, fmt.Errorf("could not get orders: %w", err)
 	}
 	defer rows.Close()
 
 	var orders []models.Order
 	for rows.Next() {
 		var order models.Order
-		if err := rows.Scan(&order.ID, &order.CustomerName, &order.Status, &order.TotalPrice, &order.CreatedAt, &order.UpdatedAt, &order.IsDeleted); err != nil {
-			return nil, fmt.Errorf("could not scan order: %v", err)
+		if err := rows.Scan(
+			&order.ID, &order.CustomerName, &order.Status, &order.TotalPrice,
+			&order.ProductID, &order.CreatedAt, &order.UpdatedAt, &order.IsDeleted,
+		); err != nil {
+			return nil, fmt.Errorf("could not scan order: %w", err)
 		}
 		orders = append(orders, order)
 	}
