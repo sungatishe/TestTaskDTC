@@ -1,14 +1,14 @@
 createdb:
-	docker exec -it order_db createdb --username=db_user --owner=db_user order_db
+	docker exec -it order_db createdb --username=${POSTGRES_USER} --owner=${POSTGRES_USER} ${POSTGRES_DB}
 
 dropdb:
-	docker exec -it order_db dropdb --username=db_user order_db
+	docker exec -it order_db dropdb --username=${POSTGRES_USER} ${POSTGRES_DB}
 
 migrateup:
-	migrate -path db/migrations -database "postgresql://db_user:db_password@localhost:5432/order_db?sslmode=disable" up
+	migrate -path db/migrations -database "postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}?sslmode=disable" up
 
 migratedown:
-	migrate -path db/migrations -database "postgresql://db_user:db_password@localhost:5432/order_db?sslmode=disable" down
+	migrate -path db/migrations -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?sslmode=disable" down
 
 build:
 	docker-compose up --build
@@ -18,6 +18,5 @@ up:
 
 down:
 	docker-compose down
-
 
 .PHONY: createdb dropdb migrateup migratedown build up down

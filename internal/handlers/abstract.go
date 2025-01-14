@@ -22,3 +22,7 @@ type ProductServiceInterface interface {
 	GetProductByID(productID int) (*models.Product, error)
 	GetAllProducts() ([]models.Product, error)
 }
+
+type LogServiceInterface interface {
+	CreateLog(action, details string, userID int) error
+}

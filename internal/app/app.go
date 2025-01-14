@@ -1,9 +1,9 @@
 package app
 
 import (
-	"TestTask/cache"
 	"TestTask/config"
 	"TestTask/db/database"
+	"TestTask/internal/cache"
 	"TestTask/internal/handlers"
 	"TestTask/internal/repository"
 	"TestTask/internal/routes"
@@ -29,6 +29,7 @@ func Run() {
 	orderRepository := repository.NewOrderRepository(database.DB)
 	productRepository := repository.NewProductRepository(database.DB)
 	userRepository := repository.NewUserRepository(database.DB)
+	logRepository := repository.NewLogRepository(database.DB)
 
 	log.Println("Repositories initialized")
 
@@ -37,10 +38,11 @@ func Run() {
 	productService := service.NewProductService(productRepository)
 	userService := service.NewUserService(userRepository)
 	authService := service.NewAuthService(userService)
+	logService := service.NewLogService(logRepository)
 
 	log.Println("Services initialized")
 
-	orderHandler := handlers.NewOrderHandler(orderService)
+	orderHandler := handlers.NewOrderHandler(orderService, logService)
 	productHandler := handlers.NewProductHandler(productService)
 	authHandler := handlers.NewAuthHandlers(authService)
 

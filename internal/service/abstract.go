@@ -31,3 +31,7 @@ type CacheInterface interface {
 	SetOrders(key string, orders []models.Order)
 	GetOrders(key string) ([]models.Order, bool)
 }
+
+type LogRepository interface {
+	CreateLog(log *models.Log) error
+}
