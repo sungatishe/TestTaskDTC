@@ -35,3 +35,8 @@ type CacheInterface interface {
 type LogRepository interface {
 	CreateLog(log *models.Log) error
 }
+
+type ProducerInterface interface {
+	Publish(key, value []byte) error
+	Close() error
+}

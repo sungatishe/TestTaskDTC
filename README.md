@@ -107,6 +107,10 @@ To set up and run the application, you can use Docker Compose and Makefile comma
     DB_PASSWORD= << PUT YOUR DB PASSWORD >>
     DB_NAME= # << PUT YOUR DB NAME >>
     DB_SSL_MODE=disable
+   
+   KAFKA_ADDRESS=kafka:9092
+   KAFKA_CONTAINER_NAME=kafka
+   TOPIC_NAME=order_status_changed
 
     JWT_SECRET= << PUT YOUR JWT SECRETY KEY >>
     ```
@@ -137,8 +141,16 @@ To set up and run the application, you can use Docker Compose and Makefile comma
     make migrateup
     ```
 
+5. **Kafka Setup (if necessary):**
 
-5. **Stopping the Application:**
+   If the kafka topic was not created:
+    ```bash
+    make create_topic
+    ```
+
+
+
+6. **Stopping the Application:**
 
    To stop the running services, you can use the following command:
     ```bash

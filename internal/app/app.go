@@ -5,6 +5,7 @@ import (
 	"TestTask/db/database"
 	"TestTask/internal/cache"
 	"TestTask/internal/handlers"
+	"TestTask/internal/kafka"
 	"TestTask/internal/repository"
 	"TestTask/internal/routes"
 	"TestTask/internal/service"
@@ -33,8 +34,14 @@ func Run() {
 
 	log.Println("Repositories initialized")
 
+	kafkaConfig := config.Config.Kafka
+	kafkaProducer := kafka.NewProducer(kafkaConfig.Brokers, kafkaConfig.Topic)
+
+	log.Println("Kafka producer initialized")
+
 	cacheService := cache.NewCacheService()
-	orderService := service.NewOrderService(orderRepository, cacheService)
+	eventService := service.NewEventService(kafkaProducer)
+	orderService := service.NewOrderService(orderRepository, cacheService, eventService)
 	productService := service.NewProductService(productRepository)
 	userService := service.NewUserService(userRepository)
 	authService := service.NewAuthService(userService)
