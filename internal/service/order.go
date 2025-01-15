@@ -7,12 +7,17 @@ import (
 )
 
 type OrderService struct {
-	repo  OrderRepositoryInterface
-	cache CacheInterface
+	repo         OrderRepositoryInterface
+	cache        CacheInterface
+	eventService *EventService
 }
 
-func NewOrderService(repo OrderRepositoryInterface, cache CacheInterface) *OrderService {
-	return &OrderService{repo: repo, cache: cache}
+func NewOrderService(repo OrderRepositoryInterface, cache CacheInterface, eventService *EventService) *OrderService {
+	return &OrderService{
+		repo:         repo,
+		cache:        cache,
+		eventService: eventService,
+	}
 }
 
 func (s *OrderService) CreateOrder(order *models.Order) error {
@@ -33,16 +38,27 @@ func (s *OrderService) UpdateOrder(order *models.Order) error {
 		return fmt.Errorf("invalid order data")
 	}
 
+	existingOrder, err := s.repo.GetOrderByID(order.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get existing order: %v", err)
+	}
+
+	oldStatus := existingOrder.Status
+
 	order.UpdatedAt = time.Now()
 
-	err := s.repo.UpdateOrder(order)
+	err = s.repo.UpdateOrder(order)
 	if err != nil {
 		return err
 	}
 
 	s.cache.SetOrder(order.ID, order)
 
-	return s.repo.UpdateOrder(order)
+	if oldStatus != order.Status {
+		s.eventService.PublishOrderStatusChanged(order.ID, oldStatus, order.Status)
+	}
+
+	return nil
 }
 
 func (s *OrderService) DeleteOrder(orderID int) error {
