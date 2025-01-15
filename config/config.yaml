@@ -11,5 +11,5 @@ database:
   ssl_mode: ${DB_SSL_MODE}
 
 kafka:
-  address: "kafka:9092"
-  topic_order_status_changed: "order_status_changed"
+  address: ${KAFKA_ADDRESS}
+  topic_order_status_changed: ${TOPIC_NAME}
