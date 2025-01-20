@@ -40,3 +40,7 @@ type ProducerInterface interface {
 	Publish(key, value []byte) error
 	Close() error
 }
+
+type EventServiceInterface interface {
+	PublishOrderStatusChanged(orderID int, oldStatus, newStatus string)
+}

@@ -9,10 +9,10 @@ import (
 type OrderService struct {
 	repo         OrderRepositoryInterface
 	cache        CacheInterface
-	eventService *EventService
+	eventService EventServiceInterface
 }
 
-func NewOrderService(repo OrderRepositoryInterface, cache CacheInterface, eventService *EventService) *OrderService {
+func NewOrderService(repo OrderRepositoryInterface, cache CacheInterface, eventService EventServiceInterface) *OrderService {
 	return &OrderService{
 		repo:         repo,
 		cache:        cache,
