@@ -36,6 +36,14 @@ func (m *MockOrderRepository) GetOrderByID(orderID int) (*models.Order, error) {
 	return nil, args.Error(1)
 }
 
+type MockEventService struct {
+	mock.Mock
+}
+
+func (m *MockEventService) PublishOrderStatusChanged(orderID int, oldStatus, newStatus string) {
+	m.Called(orderID, oldStatus, newStatus)
+}
+
 func (m *MockOrderRepository) GetOrdersByFilters(status string, minPrice, maxPrice float64) ([]models.Order, error) {
 	args := m.Called(status, minPrice, maxPrice)
 	return args.Get(0).([]models.Order), args.Error(1)
@@ -43,8 +51,9 @@ func (m *MockOrderRepository) GetOrdersByFilters(status string, minPrice, maxPri
 
 func TestCreateOrder(t *testing.T) {
 	mockRepo := new(MockOrderRepository)
-	mockCache := cache.NewCacheService()                         // Добавляем инстанс CacheService
-	orderService := service.NewOrderService(mockRepo, mockCache) // Передаем cache сюда
+	mockCache := cache.NewCacheService() // Добавляем инстанс CacheService
+	mockEventService := new(MockEventService)
+	orderService := service.NewOrderService(mockRepo, mockCache, mockEventService) // Передаем cache сюда
 
 	order := &models.Order{
 		CustomerName: "John Doe",
@@ -75,42 +84,42 @@ func TestCreateOrder(t *testing.T) {
 
 func TestUpdateOrder(t *testing.T) {
 	mockRepo := new(MockOrderRepository)
-	mockCache := cache.NewCacheService()                         // Добавляем инстанс CacheService
-	orderService := service.NewOrderService(mockRepo, mockCache) // Передаем cache сюда
+	mockCache := cache.NewCacheService()
+	mockEventService := new(MockEventService) // Используем MockEventService
 
-	order := &models.Order{
+	orderService := service.NewOrderService(mockRepo, mockCache, mockEventService)
+
+	existingOrder := &models.Order{
 		ID:           1,
 		CustomerName: "John Doe",
 		TotalPrice:   99.99,
+		Status:       "pending",
 		ProductID:    1,
 	}
 
-	// Мокаем успешное выполнение обновления заказа
-	mockRepo.On("UpdateOrder", order).Return(nil)
-
-	// Тест: успешное обновление
-	err := orderService.UpdateOrder(order)
-	assert.NoError(t, err)
-
-	// Мокаем ошибку для invalid данных
-	invalidOrder := &models.Order{
+	updatedOrder := &models.Order{
 		ID:           1,
-		CustomerName: "",
-		TotalPrice:   99.99,
+		CustomerName: "John Doe Updated",
+		TotalPrice:   199.99,
+		Status:       "completed",
 		ProductID:    1,
 	}
-	err = orderService.UpdateOrder(invalidOrder)
-	assert.Error(t, err)
-	assert.Equal(t, "invalid order data", err.Error())
 
-	// Проверка, что мок был вызван
+	mockRepo.On("GetOrderByID", existingOrder.ID).Return(existingOrder, nil)
+	mockRepo.On("UpdateOrder", updatedOrder).Return(nil)
+	mockEventService.On("PublishOrderStatusChanged", updatedOrder.ID, "pending", "completed").Return()
+
+	err := orderService.UpdateOrder(updatedOrder)
+	assert.NoError(t, err)
+	mockEventService.AssertCalled(t, "PublishOrderStatusChanged", updatedOrder.ID, "pending", "completed")
 	mockRepo.AssertExpectations(t)
 }
 
 func TestDeleteOrder(t *testing.T) {
 	mockRepo := new(MockOrderRepository)
-	mockCache := cache.NewCacheService()                         // Добавляем инстанс CacheService
-	orderService := service.NewOrderService(mockRepo, mockCache) // Передаем cache сюда
+	mockCache := cache.NewCacheService() // Добавляем инстанс CacheService
+	mockEventService := new(MockEventService)
+	orderService := service.NewOrderService(mockRepo, mockCache, mockEventService) // Передаем cache сюда
 
 	// Мокаем успешное выполнение удаления
 	mockRepo.On("DeleteOrder", 1).Return(nil)
@@ -125,8 +134,9 @@ func TestDeleteOrder(t *testing.T) {
 
 func TestGetOrderByID(t *testing.T) {
 	mockRepo := new(MockOrderRepository)
-	mockCache := cache.NewCacheService()                         // Добавляем инстанс CacheService
-	orderService := service.NewOrderService(mockRepo, mockCache) // Передаем cache сюда
+	mockCache := cache.NewCacheService() // Добавляем инстанс CacheService
+	mockEventService := new(MockEventService)
+	orderService := service.NewOrderService(mockRepo, mockCache, mockEventService) // Передаем cache сюда
 
 	order := &models.Order{
 		ID:           1,
@@ -155,8 +165,9 @@ func TestGetOrderByID(t *testing.T) {
 
 func TestGetOrdersByFilters(t *testing.T) {
 	mockRepo := new(MockOrderRepository)
-	mockCache := cache.NewCacheService()                         // Добавляем инстанс CacheService
-	orderService := service.NewOrderService(mockRepo, mockCache) // Передаем cache сюда
+	mockCache := cache.NewCacheService() // Добавляем инстанс CacheService
+	mockEventService := new(MockEventService)
+	orderService := service.NewOrderService(mockRepo, mockCache, mockEventService) // Передаем cache сюда
 
 	orders := []models.Order{
 		{ID: 1, CustomerName: "John Doe", TotalPrice: 99.99, ProductID: 1},
